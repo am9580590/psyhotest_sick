@@ -8,9 +8,10 @@
         :root { --blue: #2563eb; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; justify-content: center; }
         .container { background: var(--card); width: 100%; max-width: 600px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .progress-line { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin: 15px 0; }
+        .progress-line { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin: 15px 0 5px 0; }
         .fill { height: 100%; background: var(--blue); width: 0%; transition: 0.3s; }
-        .q-text { font-size: 1.3em; font-weight: 600; text-align: center; margin: 30px 0; min-height: 70px; }
+        .status-text { color: var(--blue); font-size: 1.3em; font-weight: 600; text-align: center; margin-bottom: 10px; }
+        .q-text { font-size: 1.3em; font-weight: 600; text-align: center; margin: 10px 0 30px 0; min-height: 70px; }
         .options { display: grid; gap: 10px; }
         .btn { padding: 14px; border: 2px solid #e2e8f0; background: white; border-radius: 12px; cursor: pointer; font-size: 1em; transition: 0.1s; }
         .btn:hover { border-color: var(--blue); background: #f8fafc; }
@@ -29,22 +30,19 @@
 <body>
 
 <div class="container">
-    <!-- Блок загрузки и ввода имени -->
     <div id="start-ui" class="admin-block no-print">
         <div style="font-weight:bold; margin-bottom:10px;">Данные пациента</div>
         <input type="text" id="patientName" class="input-name" placeholder="Введите ФИО пациента...">
         <button class="btn" style="padding:8px 20px; font-size:0.9em; background: #fff;" onclick="document.getElementById('fileIn').click()">Загрузить .json врача</button>
         <input type="file" id="fileIn" class="hidden" accept=".json" onchange="handleFile(event)">
-        <div style="font-size: 0.8em; color: #64748b; margin-top: 10px;">Если проходите впервые — просто начните отвечать ниже</div>
     </div>
 
-    <!-- Интерфейс теста -->
     <div id="quiz-ui">
-        <div style="display:flex; justify-content: space-between; font-size: 0.8em; font-weight: bold; color: var(--blue);">
-            <span id="part-tag">БОЛЕЮЩИЙ</span>
+        <div style="text-align: center; font-size: 0.8em; font-weight: bold; color: #64748b;">
             <span id="counter-tag">1 / 40</span>
         </div>
         <div class="progress-line"><div class="fill" id="pb"></div></div>
+        <div id="part-tag" class="status-text">Болеющий человек:</div>
         <div class="q-text" id="q-text">Загрузка...</div>
         <div class="options no-print">
             <button class="btn" onclick="handleAns(1)">Нет</button>
@@ -55,14 +53,12 @@
         </div>
     </div>
 
-    <!-- Результаты -->
     <div id="report-ui" class="hidden">
         <h2 style="text-align:center; margin-top:0;">Результаты диагностики</h2>
         <div id="displayPatientName" style="text-align:center; font-weight:bold; margin-bottom:20px; color:var(--blue);"></div>
         <div id="scales-list"></div>
         <div id="total-val" style="margin-top:15px; padding:20px; background:var(--blue); color:white; border-radius:12px; text-align:center; font-weight:bold; font-size:1.2em;"></div>
-        
-        <button onclick="downloadJson()" class="btn no-print" style="width:100%; margin-top:20px; background:#059669; color:white; border:none;">💾 Сохранить файл (ФИО_Дата.json)</button>
+        <button onclick="downloadJson()" class="btn no-print" style="width:100%; margin-top:20px; background:#059669; color:white; border:none;">💾 Сохранить результат</button>
         <button onclick="window.print()" class="btn no-print" style="width:100%; margin-top:10px;">🖨️ Распечатать отчет</button>
         <button onclick="location.reload()" class="btn no-print" style="width:100%; margin-top:10px; border:none; color:var(--blue);">🔄 Начать заново</button>
     </div>
@@ -72,14 +68,14 @@
     const questions = ["Может позволить себе злиться, капризничать, обижаться", "Имеет право на отдых", "Может не выполнять неприятную для него работу", "Имеет право на внимание со стороны близких", "Имеет право на сочувствие со стороны окружающих", "Может не принимать ответственных решений", "Может не решать сложные жизненные проблемы", "Может позволить себе быть слабым", "Может распоряжаться временем по своему усмотрению", "Может не соответствовать ожиданиям других", "Может требовать к себе особого отношения", "Может открыто выражать свои чувства", "Может быть объектом заботы", "Может не участвовать в конфликтах", "Может оправдывать свои неудачи состоянием здоровья", "Может позволить себе материальные траты на себя", "Может контролировать поведение близких своим состоянием", "Может требовать тишины и покоя", "Может не заниматься домашними делами", "Может пересмотреть свои жизненные цели", "Должен брать на себя ответственность за свою жизнь", "Обязан выполнять повседневные обязанности", "Должен считаться с интересами окружающих", "Может лишиться повышенного внимания близких", "Должен решать накопившиеся проблемы", "Обязан выйти на работу/учебу", "Может столкнуться с критикой, которой не было при болезни", "Должен соответствовать социальным нормам", "Теряет право на капризы и обиды", "Должен сам заботиться о других", "Может почувствовать себя одиноким без опеки", "Должен ставить новые цели и достигать их", "Теряет возможность манипулировать окружающими", "Должен справляться со стрессами самостоятельно", "Обязан быть «сильным»", "Может столкнуться с реальностью, которую игнорировал", "Должен оправдывать ожидания работодателя или семьи", "Теряет право на особые льготы и сочувствие", "Должен заново выстраивать отношения с людьми", "Может снова почувствовать груз ответственности за будущее"];
 
     const scales = [
-        { n: "Регрессия", idx: [4, 12, 14, 15, 19], max: 25, t: "Чем больше испытуемый уходит в регрессию, избегает ответственности, думает, что люди, Бог несправедливы к нему, тем меньше он может сфокусироваться на положительных, более приятных событиях и ситуациях, а больше размышляет о пережитых затруднениях, тем дольше остается в болезненном состоянии." },
-        { n: "Триггеры соматизации", idx: [1, 2, 5, 10, 17], max: 25, t: "Симптом как защита от перегрузок. Единственный способ заявить о своих нуждах." },
-        { n: "Конформизм", idx: [3, 7, 8, 11, 20], max: 25, t: "Стремление соответствовать роли больного ради сохранения опеки." },
-        { n: "Симуляция", idx: [6, 9, 13, 16, 18], max: 25, t: "Подсознательное преувеличение тяжести для оправдания неудач." },
-        { n: "Ресурсы восстановления", idx: [25, 29, 35, 37], max: 20, t: "Способность находить смыслы вне болезни. Благоприятный прогноз." },
-        { n: "Цена восстановления", idx: [30, 31, 33, 34], max: 20, t: "Страх перед здоровой жизнью и потерей привилегий." },
-        { n: "Пути восстановления", idx: [21, 23, 27, 36], max: 20, t: "Готовность к активным действиям для выхода из кризиса." },
-        { n: "Автономия", idx: [22, 24, 26, 28, 40], max: 25, t: "Независимость. Низкий балл — психологическая привязка к опеке." }
+        { n: "Регрессия", idx:[4, 12, 14, 15, 19], max: 25, t: "Чем больше испытуемый уходит в регрессию, избегает ответственности, думает, что люди, Бог несправедливы к нему, тем меньше он может сфокусироваться на положительных, более приятных событиях и ситуациях, а больше размышляет о пережитых затруднениях, тем дольше остается в болезненном состоянии." },
+        { n: "Триггеры соматизации", idx:[1, 2, 5, 10, 17], max: 25, t: "Симптом как защита от перегрузок. Единственный способ заявить о своих нуждах." },
+        { n: "Конформизм", idx:[3, 7, 8, 11, 20], max: 25, t: "Стремление соответствовать роли больного ради сохранения опеки." },
+        { n: "Симуляция", idx:[6, 9, 13, 16, 18], max: 25, t: "Подсознательное преувеличение тяжести для оправдания неудач." },
+        { n: "Ресурсы восстановления", idx:[25, 29, 35, 37], max: 20, t: "Способность находить смыслы вне болезни. Благоприятный прогноз." },
+        { n: "Цена восстановления", idx:[30, 31, 33, 34], max: 20, t: "Страх перед здоровой жизнью и потерей привилегий." },
+        { n: "Пути восстановления", idx:[21, 23, 27, 36], max: 20, t: "Готовность к активным действиям для выхода из кризиса." },
+        { n: "Автономия", idx:[22, 24, 26, 28, 40], max: 25, t: "Независимость. Низкий балл — психологическая привязка к опеке." }
     ];
 
     let currentIdx = 0, userAns = [];
@@ -88,7 +84,7 @@
         document.getElementById('q-text').innerText = questions[currentIdx];
         document.getElementById('counter-tag').innerText = (currentIdx + 1) + " / 40";
         document.getElementById('pb').style.width = (currentIdx / 40 * 100) + "%";
-        document.getElementById('part-tag').innerText = currentIdx < 20 ? "БОЛЕЮЩИЙ" : "ВЫЗДОРАВЛИВАЮЩИЙ";
+        document.getElementById('part-tag').innerText = currentIdx < 20 ? "Болеющий человек" : "Выздоравливающий:";
     }
 
     function handleAns(v) {
@@ -103,22 +99,12 @@
         document.getElementById('start-ui').classList.add('hidden');
         document.getElementById('report-ui').classList.remove('hidden');
         document.getElementById('displayPatientName').innerText = "Пациент: " + name;
-        
         let sumTotal = 0, html = '';
-        scales.forEach((s, idx) => {
+        scales.forEach((s) => {
             const score = s.idx.reduce((acc, q) => acc + userAns[q-1], 0);
             sumTotal += score;
             const p = (score/s.max)*100;
-            html += `<div class="scale-box">
-                <div class="scale-head" onclick="this.nextElementSibling.classList.toggle('open')">
-                    <span>${s.n}</span>
-                    <div style="display:flex; align-items:center;">
-                        <span>${score} б.</span>
-                        <div class="bar-wrap"><div class="bar-inner" style="width:${p}%"></div></div>
-                    </div>
-                </div>
-                <div class="scale-body">${s.t}</div>
-            </div>`;
+            html += `<div class="scale-box"><div class="scale-head" onclick="this.nextElementSibling.classList.toggle('open')"><span>${s.n}</span><div style="display:flex; align-items:center;"><span>${score} б.</span><div class="bar-wrap"><div class="bar-inner" style="width:${p}%"></div></div></div></div><div class="scale-body">${s.t}</div></div>`;
         });
         document.getElementById('scales-list').innerHTML = html;
         document.getElementById('total-val').innerText = "ОБЩИЙ УРОВЕНЬ: " + sumTotal;
@@ -129,29 +115,19 @@
         const data = JSON.stringify({ans: userAns, name: name});
         const blob = new Blob([data], {type: 'application/json'});
         const a = document.createElement('a');
-        const date = new Date().toISOString().slice(0,10);
         a.href = URL.createObjectURL(blob);
-        a.download = `${name}_${date}.json`;
+        a.download = `${name}_${new Date().toISOString().slice(0,10)}.json`;
         a.click();
     }
 
     function handleFile(e) {
-        const file = e.target.files[0];
-        if(!file) return;
         const reader = new FileReader();
         reader.onload = function(e) {
-            try {
-                const data = JSON.parse(e.target.result);
-                if(data.ans && data.ans.length === 40) {
-                    userAns = data.ans;
-                    document.getElementById('patientName').value = data.name || "";
-                    renderReport();
-                } else { alert("Ошибка: некорректный формат файла!"); }
-            } catch(err) { alert("Ошибка чтения файла!"); }
+            const data = JSON.parse(e.target.result);
+            if(data.ans) { userAns = data.ans; document.getElementById('patientName').value = data.name || ""; renderReport(); }
         };
-        reader.readAsText(file);
+        reader.readAsText(e.target.files[0]);
     }
-
     showQ();
 </script>
 </body>
